@@ -56,9 +56,8 @@ function App() {
   return (
     <div className="page">
       <header>
-        <p className="eyebrow">Kubernetes Practice Project</p>
+        <p className="eyebrow">Kubernetes Project</p>
         <h1>Student Help Desk</h1>
-        <p className="subtitle">React + Spring Boot + MySQL app for Kubernetes deployment practice.</p>
       </header>
 
       <main className="grid">
