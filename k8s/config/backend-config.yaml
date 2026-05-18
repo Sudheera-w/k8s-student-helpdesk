@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  DB_URL: "jdbc:mysql://mysql-service:3306/helpdesk_db"
+  DB_USERNAME: "root"
