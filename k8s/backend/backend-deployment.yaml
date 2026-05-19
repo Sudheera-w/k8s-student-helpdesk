@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helpdesk-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helpdesk-backend
+  template:
+    metadata:
+      labels:
+        app: helpdesk-backend
+    spec:
+      containers:
+        - name: backend
+          image: helpdesk-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              value: "jdbc:mysql://mysql-service:3306/helpdesk_db"
+            - name: DB_USERNAME
+              value: "root"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
