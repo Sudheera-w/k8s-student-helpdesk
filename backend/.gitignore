@@ -1,4 +1,3 @@
-src/main/resources/application.properties
 # Node
 frontend/node_modules
 frontend/dist
