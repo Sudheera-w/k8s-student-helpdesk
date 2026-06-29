@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import axios from 'axios';
 import './style.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 function App() {
   const [requests, setRequests] = useState([]);
