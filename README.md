@@ -1,170 +1,169 @@
-# 🎓 Student Help Desk — Kubernetes Full-Stack Deployment
+# 🎓 Student Help Desk - Kubernetes Full-Stack Deployment
 
-![Java](https://img.shields.io/badge/Java-17-007396?style=flat&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3.5-6DB33F?style=flat&logo=spring-boot&logoColor=white)
-![React](https://img.shields.io/badge/React-Latest-61DAFB?style=flat&logo=react&logoColor=black)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker&logoColor=white)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-Manifests-326CE5?style=flat&logo=kubernetes&logoColor=white)
+**Docker • Kubernetes • Java • Spring Boot • React • MySQL**
 
 A full-stack CRUD web application for managing student help requests, built as a hands-on Kubernetes deployment project. The application demonstrates containerisation, orchestration, persistent storage, secrets management, and traffic routing using industry-standard tooling.
 
+---
 
-## Overview
+# 📌 Overview
 
-The **Student Help Desk** is a CRUD web application that allows students to submit help requests and staff to manage them. The project is designed as a hands-on Kubernetes learning exercise, demonstrating real-world concepts including:
+The Student Help Desk is a CRUD web application that allows students to submit help requests and staff to manage them.
 
-- Multi-container Kubernetes deployments
-- Kubernetes Services (ClusterIP & LoadBalancer)
-- ConfigMaps and Secrets for configuration management
-- PersistentVolumes and PersistentVolumeClaims for stateful database storage
-- NGINX Ingress routing for a single-entry-point architecture
-- Liveness and Readiness health probes
-- Resource requests and limits
+This project was designed as a practical Kubernetes learning exercise and demonstrates:
+
+* Multi-container Kubernetes deployments
+* Kubernetes Services (ClusterIP & LoadBalancer)
+* ConfigMaps and Secrets
+* PersistentVolumes (PV) and PersistentVolumeClaims (PVC)
+* NGINX Ingress routing
+* Health Probes (Liveness & Readiness)
+* Resource Requests and Limits
+* Docker containerisation
 
 ---
 
-## Tech Stack
+# 🛠 Tech Stack
 
-| Layer       | Technology                          | Version         |
-|-------------|-------------------------------------|-----------------|
-| Frontend    | React + Vite + Axios                | React latest    |
-| Backend     | Spring Boot (REST API)              | 3.3.5           |
-| Language    | Java                                | 17              |
-| Database    | MySQL                               | 8               |
-| Build Tool  | Maven                               | (Spring wrapper)|
-| Container   | Docker                              | —               |
-| Orchestration | Kubernetes (Docker Desktop)       | —               |
-| Ingress     | NGINX Ingress Controller            | —               |
+| Layer            | Technology                  | Version |
+| ---------------- | --------------------------- | ------- |
+| Frontend         | React + Vite + Axios        | Latest  |
+| Backend          | Spring Boot (REST API)      | 3.3.5   |
+| Language         | Java                        | 17      |
+| Database         | MySQL                       | 8       |
+| Build Tool       | Maven                       | Latest  |
+| Containerisation | Docker                      | Latest  |
+| Orchestration    | Kubernetes (Docker Desktop) | Latest  |
+| Ingress          | NGINX Ingress Controller    | Latest  |
 
 ---
 
-## Architecture
+# 🏗 Architecture
 
-```
+```text
                         ┌──────────────────────────────────────────────┐
                         │              Kubernetes Cluster               │
-                        │          (Docker Desktop — localhost)         │
+                        │          (Docker Desktop - localhost)         │
                         │                                               │
-  Browser               │  ┌──────────────────────────────────────┐    │
-  http://localhost ─────┼──► NGINX Ingress (helpdesk-ingress)      │    │
-                        │  │  host: localhost                      │    │
-                        │  │  /       → helpdesk-frontend svc:80   │    │
-                        │  │  /api    → helpdesk-backend  svc:8080 │    │
+ Browser                │  ┌──────────────────────────────────────┐    │
+ http://localhost ──────┼─►│ NGINX Ingress (helpdesk-ingress)      │    │
+                        │  │ host: localhost                      │    │
+                        │  │ /     → helpdesk-frontend :80        │    │
+                        │  │ /api  → helpdesk-backend  :8080      │    │
                         │  └──────────────────────────────────────┘    │
-                        │         │                    │                │
-                        │         ▼                    ▼                │
-                        │  ┌─────────────┐    ┌──────────────────┐     │
-                        │  │  Frontend   │    │    Backend       │     │
-                        │  │  Deployment │    │    Deployment    │     │
-                        │  │  (React)    │    │  (Spring Boot)   │     │
-                        │  │  Port 5173  │    │    Port 8080     │     │
-                        │  └─────────────┘    └──────────────────┘     │
-                        │   LoadBalancer              ClusterIP         │
-                        │    svc:80→5173            svc:8080→8080      │
-                        │                                │              │
+                        │              │                 │              │
+                        │              ▼                 ▼              │
+                        │   ┌────────────────┐   ┌────────────────┐    │
+                        │   │ Frontend       │   │ Backend        │    │
+                        │   │ Service        │   │ Service        │    │
+                        │   │                │   │ ClusterIP      │    │
+                        │   └────────────────┘   └────────────────┘    │
+                        │            │                  │              │
+                        │            ▼                  ▼              │
+                        │   ┌────────────────┐   ┌────────────────┐    │
+                        │   │ Frontend Pod   │   │ Backend Pod    │    │
+                        │   │ (React / Vite) │   │ (Spring Boot)  │    │
+                        │   └────────────────┘   └────────────────┘    │
+                        │                               │              │
                         │                               ▼              │
-                        │                   ┌──────────────────────┐   │
-                        │                   │   MySQL Deployment   │   │
-                        │                   │   (mysql:8)          │   │
-                        │                   │   Port 3306          │   │
-                        │                   └──────────────────────┘   │
-                        │                    ClusterIP (mysql-service)  │
-                        │                             │                 │
-                        │                        ┌────┴────┐            │
-                        │                        │  mysql  │            │
-                        │                        │   PVC   │            │
-                        │                        │  10 Gi  │            │
-                        │                        └─────────┘            │
+                        │                     ┌────────────────┐       │
+                        │                     │ MySQL Service  │       │
+                        │                     │ ClusterIP      │       │
+                        │                     └────────────────┘       │
+                        │                               │              │
+                        │                               ▼              │
+                        │                     ┌────────────────┐       │
+                        │                     │ MySQL Pod      │       │
+                        │                     │ mysql:8        │       │
+                        │                     └────────────────┘       │
+                        │                               │              │
+                        │                               ▼              │
+                        │                     ┌────────────────┐       │
+                        │                     │ PVC (10Gi)     │       │
+                        │                     └────────────────┘       │
+                        │                               │              │
+                        │                               ▼              │
+                        │                     ┌────────────────┐       │
+                        │                     │ PV             │       │
+                        │                     └────────────────┘       │
                         └──────────────────────────────────────────────┘
 ```
 
 ---
 
-## Project Structure
+# 📂 Project Structure
 
-```
+```text
 k8s-student-helpdesk/
 │
-├── .env                          # Local Docker Compose environment variables
+├── .env
 ├── .gitignore
-├── docker-compose.yml            # Local development stack (MySQL + Backend + Frontend)
+├── docker-compose.yml
 │
-├── backend/                      # Spring Boot REST API
+├── backend/
 │   ├── Dockerfile
 │   ├── pom.xml
 │   └── src/main/
 │       ├── java/com/example/helpdesk/
-│       │   ├── HelpdeskApplication.java          # Spring Boot entry point
+│       │   ├── HelpdeskApplication.java
 │       │   ├── controller/
-│       │   │   └── HelpRequestController.java    # REST endpoints
+│       │   │   └── HelpRequestController.java
 │       │   ├── model/
-│       │   │   └── HelpRequest.java              # JPA Entity
+│       │   │   └── HelpRequest.java
 │       │   ├── repository/
-│       │   │   └── HelpRequestRepository.java    # Spring Data JPA repository
+│       │   │   └── HelpRequestRepository.java
 │       │   └── service/
-│       │       └── HelpRequestService.java       # Business logic
+│       │       └── HelpRequestService.java
 │       └── resources/
-│           └── application.properties            # App config (env-driven)
+│           └── application.properties
 │
-├── frontend/                     # React + Vite SPA
+├── frontend/
 │   ├── Dockerfile
 │   ├── package.json
 │   ├── vite.config.js
 │   ├── index.html
-│   ├── dist/                     # Pre-built production assets
 │   └── src/
-│       ├── main.jsx              # Root component (CRUD UI)
+│       ├── main.jsx
 │       └── style.css
 │
-└── k8s/                          # Kubernetes manifests
-    ├── ingress.yaml              # NGINX Ingress (routes / and /api)
+└── k8s/
+    ├── ingress.yaml
     ├── config/
-    │   ├── backend-config.yaml   # ConfigMap (DB_URL, DB_USERNAME)
-    │   └── mysql-secret.yaml     # Secret (MYSQL_ROOT_PASSWORD — base64)
     ├── mysql/
-    │   ├── mysql-pv.yaml         # PersistentVolume (10Gi, hostPath)
-    │   ├── mysql-pvc.yaml        # PersistentVolumeClaim (10Gi)
-    │   ├── mysql-deployment.yaml # MySQL 8 Deployment
-    │   └── mysql-service.yaml    # ClusterIP Service (port 3306)
     ├── backend/
-    │   ├── backend-deployment.yaml  # Spring Boot Deployment (liveness + readiness probes)
-    │   └── backend-service.yaml     # ClusterIP Service (port 8080)
     └── frontend/
-        ├── frontend-deployment.yaml # React/Vite Deployment
-        └── frontend-service.yaml    # LoadBalancer Service (port 80 → 5173)
 ```
 
 ---
 
-## Prerequisites
+# ✅ Prerequisites
 
-Make sure the following are installed and available on your machine before proceeding.
+| Tool           | Purpose                        |
+| -------------- | ------------------------------ |
+| Docker Desktop | Container Runtime + Kubernetes |
+| kubectl        | Kubernetes CLI                 |
+| Java 17        | Backend Development            |
+| Maven          | Build Spring Boot Application  |
+| Node.js 20+    | Frontend Development           |
 
-| Tool              | Purpose                                          | Check                        |
-|-------------------|--------------------------------------------------|------------------------------|
-| Docker Desktop    | Container runtime + Kubernetes cluster           | `docker --version`           |
-| Kubernetes        | Enabled inside Docker Desktop Settings           | `kubectl version --client`   |
-| kubectl           | CLI to interact with your cluster                | `kubectl cluster-info`       |
-| Java 17           | Build the Spring Boot backend                    | `java -version`              |
-| Maven             | Package the backend JAR                          | `mvn -version`               |
-| Node.js 20+       | (Optional) Run frontend locally outside Docker   | `node --version`             |
-
-> **Docker Desktop Kubernetes:** Go to **Docker Desktop → Settings → Kubernetes → Enable Kubernetes**, then click **Apply & Restart**. This gives you a single-node cluster running on `localhost` with full LoadBalancer support — no `minikube tunnel` required.
-
----
-
-## Local Development with Docker Compose
-
-For quick local development without Kubernetes, use Docker Compose. This spins up all three services together.
-
-**1. Copy the environment file and set your credentials:**
+Verify installation:
 
 ```bash
-cp .env .env.local   # or just edit .env directly
+docker --version
+kubectl version --client
+kubectl cluster-info
+java -version
+mvn -version
+node --version
 ```
 
-The `.env` file contains:
+---
+
+# 🚀 Local Development (Docker Compose)
+
+## 1. Configure Environment Variables
+
+Create or edit `.env`
 
 ```env
 MYSQL_ROOT_PASSWORD=your_password
@@ -175,7 +174,9 @@ DB_USERNAME=root
 DB_PASSWORD=your_password
 ```
 
-**2. Build the backend JAR first:**
+---
+
+## 2. Build Backend
 
 ```bash
 cd backend
@@ -183,25 +184,31 @@ mvn clean package -DskipTests
 cd ..
 ```
 
-**3. Start all services:**
+---
+
+  ## 3. Start Services
 
 ```bash
 docker compose up --build
 ```
 
-| Service  | URL                          |
-|----------|------------------------------|
-| Frontend | http://localhost:5173         |
-| Backend  | http://localhost:8080/api     |
-| MySQL    | localhost:3307 (host-mapped)  |
+### Services
 
-**4. Stop services:**
+| Service  | URL                       |
+| -------- | ------------------------- |
+| Frontend | http://localhost:5173     |
+| Backend  | http://localhost:8080/api |
+| MySQL    | localhost:3307            |
+
+---
+
+## 4. Stop Services
 
 ```bash
 docker compose down
 ```
 
-To also remove the persisted MySQL volume:
+Remove volumes:
 
 ```bash
 docker compose down -v
@@ -209,121 +216,131 @@ docker compose down -v
 
 ---
 
-## Kubernetes Deployment (Docker Desktop)
+# ☸ Kubernetes Deployment
 
-### 1. Enable Kubernetes in Docker Desktop
+## 1. Enable Kubernetes
 
-Open **Docker Desktop → Settings → Kubernetes** and tick **Enable Kubernetes**. Click **Apply & Restart** and wait for the green "Kubernetes is running" indicator.
+Docker Desktop → Settings → Kubernetes → Enable Kubernetes
 
-Verify your context is pointing to Docker Desktop:
+Verify:
 
 ```bash
 kubectl config current-context
-# Expected output: docker-desktop
+```
+
+Expected:
+
+```text
+docker-desktop
 ```
 
 ---
 
-### 2. Install the NGINX Ingress Controller
-
-The Ingress manifest uses `ingressClassName: nginx`. You must install the controller before applying the Ingress.
+## 2. Install NGINX Ingress Controller
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/cloud/deploy.yaml
 ```
 
-Wait for the controller to be ready:
+Wait until ready:
 
 ```bash
 kubectl wait --namespace ingress-nginx \
-  --for=condition=ready pod \
-  --selector=app.kubernetes.io/component=controller \
-  --timeout=120s
+--for=condition=ready pod \
+--selector=app.kubernetes.io/component=controller \
+--timeout=120s
 ```
 
 ---
 
-### 3. Build Docker Images Locally
+## 3. Build Docker Images
 
-> **Important:** Docker Desktop Kubernetes uses the **same Docker daemon** as Docker Desktop itself. You do not need to push images to a registry — build locally and they are immediately available to the cluster. All deployments use `imagePullPolicy: IfNotPresent`.
-
-**Build the backend image:**
+### Backend
 
 ```bash
-# Step 1: Package the JAR
 cd backend
 mvn clean package -DskipTests
+docker build -t helpdesk-backend:latest .
 cd ..
-
-# Step 2: Build the Docker image
-docker build -t helpdesk-backend:latest ./backend
 ```
 
-**Build the frontend image:**
+### Frontend
 
 ```bash
-docker build -t helpdesk-frontend:latest ./frontend
+cd frontend
+docker build -t helpdesk-frontend:latest .
+cd ..
 ```
 
-**Verify images are available:**
+Verify:
 
 ```bash
+Linux
 docker images | grep helpdesk
-# helpdesk-backend    latest   ...
-# helpdesk-frontend   latest   ...
+```
+```bash
+Windows
+docker images | Select-String helpdesk
 ```
 
 ---
 
-### 4. Apply Kubernetes Manifests
+## 4. Apply Kubernetes Resources
 
-Apply the manifests in this exact order to respect dependencies (Secret and PV must exist before deployments that reference them).
+### Configurations
 
 ```bash
-# 1. Secrets and ConfigMaps
 kubectl apply -f k8s/config/mysql-secret.yaml
 kubectl apply -f k8s/config/backend-config.yaml
-
-# 2. Persistent storage for MySQL
-kubectl apply -f k8s/mysql/mysql-pv.yaml
-kubectl apply -f k8s/mysql/mysql-pvc.yaml
-
-# 3. MySQL (must be running before backend starts)
-kubectl apply -f k8s/mysql/mysql-deployment.yaml
-kubectl apply -f k8s/mysql/mysql-service.yaml
-
-# 4. Backend
-kubectl apply -f k8s/backend/backend-deployment.yaml
-kubectl apply -f k8s/backend/backend-service.yaml
-
-# 5. Frontend
-kubectl apply -f k8s/frontend/frontend-deployment.yaml
-kubectl apply -f k8s/frontend/frontend-service.yaml
-
-# 6. Ingress (route traffic)
-kubectl apply -f k8s/ingress.yaml
 ```
 
-Or apply everything at once after the first deployment:
+### Persistent Storage
 
 ```bash
-kubectl apply -f k8s/config/
-kubectl apply -f k8s/mysql/
-kubectl apply -f k8s/backend/
-kubectl apply -f k8s/frontend/
-kubectl apply -f k8s/ingress.yaml
+kubectl apply -f k8s/mysql/mysql-pv.yaml
+kubectl apply -f k8s/mysql/mysql-pvc.yaml
 ```
 
+### MySQL
+
+```bash
+kubectl apply -f k8s/mysql/mysql-deployment.yaml
+kubectl apply -f k8s/mysql/mysql-service.yaml
+```
+
+### Backend
+
+```bash
+kubectl apply -f k8s/backend/backend-deployment.yaml
+kubectl apply -f k8s/backend/backend-service.yaml
+```
+
+### Frontend
+
+```bash
+kubectl apply -f k8s/frontend/frontend-deployment.yaml
+kubectl apply -f k8s/frontend/frontend-service.yaml
+```
+
+### Ingress
+
+```bash
+kubectl apply -f k8s/ingress.yaml
+```
+### apply all
+
+```bash
+kubectl apply -R -f k8s/
+```
 ---
 
-### 5. Verify the Deployment
+# 🔍 Verification
 
-**Check all resources are running:**
+Check resources:
 
 ```bash
 kubectl get all
 ```
-
 Expected output (all pods should show `Running`):
 
 ```
@@ -343,43 +360,42 @@ deployment.apps/helpdesk-frontend    1/1     1            1
 deployment.apps/mysql                1/1     1            1
 ```
 
-**Check Ingress:**
+Check ingress:
 
 ```bash
 kubectl get ingress
-# NAME                CLASS   HOSTS       ADDRESS     PORTS
-# helpdesk-ingress    nginx   localhost   localhost   80
 ```
 
-**Check PersistentVolume and PVC are bound:**
+Check storage:
 
 ```bash
 kubectl get pv,pvc
-# mysql-pv should be Bound to mysql-pvc
 ```
 
-**Check ConfigMap and Secret:**
+Check ConfigMap:
 
 ```bash
 kubectl get configmap backend-config
+```
+
+Check Secret:
+
+```bash
 kubectl get secret mysql-secret
 ```
 
 ---
 
-### 6. Access the Application
+# 🌐 Access the Application
 
-Once all pods are `Running` and the Ingress is ready:
+| Endpoint     | URL                                  |
+| ------------ | ------------------------------------ |
+| Frontend     | http://localhost                     |
+| Backend API  | http://localhost/api/requests        |
+| Health Check | http://localhost/api/requests/health |
 
-| Endpoint              | URL                                     |
-|-----------------------|-----------------------------------------|
-| Frontend (UI)         | http://localhost                        |
-| Backend API           | http://localhost/api/requests           |
-| Backend Health Check  | http://localhost/api/requests/health    |
-
-> **Note:** The frontend `LoadBalancer` service is also directly accessible at `http://localhost:80`. Docker Desktop automatically binds LoadBalancer services to `localhost`.
-
-**Alternative — port-forward (if Ingress is not needed):**
+---
+**Alternative - port-forward (if Ingress is not needed):**
 
 ```bash
 # Access frontend directly
@@ -389,36 +405,15 @@ kubectl port-forward service/helpdesk-frontend 5173:80
 kubectl port-forward service/helpdesk-backend 8080:8080
 ```
 
----
-
-## Kubernetes Manifest Reference
-
-| File | Kind | Purpose |
-|------|------|---------|
-| `k8s/config/mysql-secret.yaml` | `Secret` | Stores `MYSQL_ROOT_PASSWORD` as a base64-encoded opaque secret |
-| `k8s/config/backend-config.yaml` | `ConfigMap` | Stores `DB_URL` and `DB_USERNAME` for the backend |
-| `k8s/mysql/mysql-pv.yaml` | `PersistentVolume` | 10Gi hostPath volume at `/mnt/data/mysql` for MySQL data |
-| `k8s/mysql/mysql-pvc.yaml` | `PersistentVolumeClaim` | Claims 10Gi `ReadWriteOnce` storage |
-| `k8s/mysql/mysql-deployment.yaml` | `Deployment` | Runs `mysql:8`, mounts PVC, injects secret |
-| `k8s/mysql/mysql-service.yaml` | `Service` (ClusterIP) | Exposes MySQL on port `3306` as `mysql-service` within the cluster |
-| `k8s/backend/backend-deployment.yaml` | `Deployment` | Runs `helpdesk-backend:latest` with liveness + readiness probes and resource limits |
-| `k8s/backend/backend-service.yaml` | `Service` (ClusterIP) | Exposes Spring Boot on port `8080` as `helpdesk-backend` within the cluster |
-| `k8s/frontend/frontend-deployment.yaml` | `Deployment` | Runs `helpdesk-frontend:latest` on port `5173` |
-| `k8s/frontend/frontend-service.yaml` | `Service` (LoadBalancer) | Exposes the frontend externally at port `80` → `5173` |
-| `k8s/ingress.yaml` | `Ingress` | NGINX routing: `/` → frontend, `/api` → backend, all on `localhost` |
-
-### Health Probes (Backend)
-
-The backend deployment is configured with Kubernetes health probes hitting the `/api/requests/health` endpoint:
+# 🩺 Health Probes
 
 ```yaml
 livenessProbe:
   httpGet:
     path: /api/requests/health
     port: 8080
-  initialDelaySeconds: 180   # Spring Boot JVM startup time
+  initialDelaySeconds: 180
   periodSeconds: 10
-  failureThreshold: 5
 
 readinessProbe:
   httpGet:
@@ -428,180 +423,208 @@ readinessProbe:
   periodSeconds: 10
 ```
 
-### Resource Limits
+---
+
+# 📊 Resource Limits
 
 | Component | CPU Request | CPU Limit | Memory Request | Memory Limit |
-|-----------|-------------|-----------|----------------|--------------|
+| --------- | ----------- | --------- | -------------- | ------------ |
 | Backend   | 250m        | 500m      | 512Mi          | 1Gi          |
 | Frontend  | 100m        | 250m      | 128Mi          | 256Mi        |
 | MySQL     | 250m        | 500m      | 256Mi          | 512Mi        |
 
 ---
 
-## API Reference
+# 📡 API Endpoints
 
-Base URL (via Ingress): `http://localhost/api`  
-Base URL (direct): `http://localhost:8080/api`
+Base URL (via Ingress):
 
-| Method   | Endpoint                        | Description                         | Body                                                 |
-|----------|---------------------------------|-------------------------------------|------------------------------------------------------|
-| `GET`    | `/requests`                     | Get all help requests               | —                                                    |
-| `POST`   | `/requests`                     | Create a new help request           | `{ studentName, category, description }`             |
-| `PATCH`  | `/requests/{id}/status`         | Update status of a request          | `{ "status": "IN_PROGRESS" \| "DONE" \| "OPEN" }`   |
-| `DELETE` | `/requests/{id}`                | Delete a help request               | —                                                    |
-| `GET`    | `/requests/health`              | Backend health check                | —                                                    |
-
-**Example — Create a Request:**
-
-```bash
-curl -X POST http://localhost/api/requests \
-  -H "Content-Type: application/json" \
-  -d '{
-    "studentName": "Sudheera",
-    "category": "Technical",
-    "description": "Cannot access the student portal."
-  }'
+```text
+http://localhost/api
 ```
 
-**Example — Update Status:**
+| Method | Endpoint              | Description           |
+| ------ | --------------------- | --------------------- |
+| GET    | /requests             | Get all requests      |
+| POST   | /requests             | Create request        |
+| PATCH  | /requests/{id}/status | Update request status |
+| DELETE | /requests/{id}        | Delete request        |
+| GET    | /requests/health      | Health check          |
+
+---
+
+## Create Request
+
+Windows PowerShell
+```bash
+Invoke-RestMethod `
+-Method POST `
+-Uri "http://localhost/api/requests" `
+-ContentType "application/json" `
+-Body '{
+  "studentName":"Sudheera",
+  "category":"Technical",
+  "description":"Cannot access student portal"
+}'
+```
+Linux/macOS/GitBash
+```bash
+curl -X POST http://localhost/api/requests \
+-H "Content-Type: application/json" \
+-d '{
+  "studentName":"Sudheera",
+  "category":"Technical",
+  "description":"Cannot access student portal"
+}'
+```
+
+---
+
+## Update Status
+
+Windows PowerShell
+```bash
+Invoke-RestMethod `
+-Method PATCH `
+-Uri "http://localhost/api/requests/1/status" `
+-ContentType "application/json" `
+-Body '{"status":"IN_PROGRESS"}'  
+```
+Linux/macOS/Git Bash
 
 ```bash
 curl -X PATCH http://localhost/api/requests/1/status \
-  -H "Content-Type: application/json" \
-  -d '{ "status": "IN_PROGRESS" }'
+-H "Content-Type: application/json" \
+-d '{ "status":"IN_PROGRESS" }'
 ```
 
-**Available Categories:**
+---
 
-- `Academic`
-- `Technical`
-- `Library`
-- `Finance`
+# 📋 Categories
 
-**Available Statuses:**
-
-- `OPEN` (default on creation)
-- `IN_PROGRESS`
-- `DONE`
+* Academic
+* Technical
+* Library
+* Finance
 
 ---
 
-## Environment Variables
+# 📋 Status Values
 
-### Backend (`application.properties` / container env)
-
-| Variable      | Description                     | Example                                      |
-|---------------|---------------------------------|----------------------------------------------|
-| `DB_URL`      | JDBC connection string to MySQL | `jdbc:mysql://mysql-service:3306/helpdesk_db`|
-| `DB_USERNAME` | Database username               | `root`                                       |
-| `DB_PASSWORD` | Database password               | Injected from `mysql-secret`                 |
-
-> In Kubernetes, `DB_URL` and `DB_USERNAME` come from the `backend-config` ConfigMap. `DB_PASSWORD` is injected from the `mysql-secret` Secret.
-
-### Frontend (Vite env)
-
-| Variable            | Description                   | Default                     |
-|---------------------|-------------------------------|-----------------------------|
-| `VITE_API_BASE_URL` | Backend API base URL          | `http://localhost:8080/api` |
-
-> When deployed via Ingress, the frontend makes API calls to `/api` (same origin). You can override the API URL by setting `VITE_API_BASE_URL` as a build argument.
+* OPEN
+* IN_PROGRESS
+* DONE
 
 ---
 
-## Configuration & Secrets
+# 🔐 Environment Variables
 
-### Re-generating the MySQL Secret
+## Backend
 
-The `mysql-secret.yaml` stores the password as a base64-encoded value. To use your own password:
+| Variable    | Description       |
+| ----------- | ----------------- |
+| DB_URL      | MySQL JDBC URL    |
+| DB_USERNAME | Database Username |
+| DB_PASSWORD | Database Password |
 
+---
+
+## Frontend
+
+| Variable          | Description     |
+| ----------------- | --------------- |
+| VITE_API_BASE_URL | Backend API URL |
+
+---
+
+# 🔒 Configuration & Secrets
+
+Generate Base64 Secret:
+
+Linux/macOS/Git Bash
 ```bash
-echo -n "your_new_password" | base64
-# Copy the output and replace the value in k8s/config/mysql-secret.yaml
+echo -n "your_password" | base64
+```
+Windows PowerShell
+```bash
+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("your_password"))
 ```
 
-Then re-apply:
+Apply Secret:
 
 ```bash
 kubectl apply -f k8s/config/mysql-secret.yaml
 ```
 
-> **Security note:** Never commit real credentials to version control. The `.env` file is listed in `.gitignore`. For production use, consider [Kubernetes External Secrets](https://external-secrets.io/) or a vault solution.
-
 ---
 
-## Troubleshooting
+# 🛠 Troubleshooting
 
-### Pods stuck in `Pending` or `CrashLoopBackOff`
+### Pod Issues
 
 ```bash
-# Check pod status and events
 kubectl get pods
 kubectl describe pod <pod-name>
-
-# Stream logs from a pod
-kubectl logs <pod-name> --follow
-kubectl logs <pod-name> --previous   # logs from a crashed container
+kubectl logs <pod-name>
+kubectl logs <pod-name> --previous
 ```
 
----
+### Backend Restarting
 
-### Backend pod keeps restarting
-
-The backend has a `180s` `initialDelaySeconds` on its liveness probe — the Spring Boot JVM needs time to start. If it keeps crashing, check:
+Check logs:
 
 ```bash
 kubectl logs deployment/helpdesk-backend
 ```
 
-Common causes:
-- MySQL is not yet ready. The backend connects to `mysql-service:3306` — make sure the MySQL pod is `Running` first.
-- The `mysql-secret` was not applied before the backend deployment.
+Common reasons:
 
----
+* MySQL not ready
+* Missing Secret
+* Wrong database configuration
 
-### Images not found (`ErrImagePull` / `ImagePullBackOff`)
+### Image Pull Errors
 
-Docker Desktop Kubernetes uses the same Docker daemon as Docker Desktop. If you see image pull errors:
-
+Linux/MacOS/GitBash
 ```bash
-# Make sure images are built and visible
 docker images | grep helpdesk
+```
+Windows powershell
+```bash
+docker images | Select-String helpdesk
+```
+Verify:
 
-# Confirm imagePullPolicy is IfNotPresent (not Always) in your manifests
-kubectl describe deployment helpdesk-backend | grep "Image Pull"
+```yaml
+imagePullPolicy: IfNotPresent
 ```
 
----
-
-### MySQL PVC stuck in `Pending`
-
-The PV uses a `hostPath` of `/mnt/data/mysql`. On Docker Desktop (Windows/Mac), this path lives inside the Docker VM, not your host OS — it will be created automatically when MySQL starts. If the PVC remains pending:
+### PVC Pending
 
 ```bash
 kubectl describe pvc mysql-pvc
 kubectl describe pv mysql-pv
 ```
 
-Make sure the `accessModes` and `storage` in the PVC exactly match the PV.
-
----
-
-### `http://localhost` shows 404 or nginx error
-
-The Ingress needs the NGINX controller to be running. Check:
+### Ingress Errors
 
 ```bash
+kubectl get ingress
 kubectl get pods -n ingress-nginx
-# The controller pod must be Running
-
 kubectl describe ingress helpdesk-ingress
 ```
 
-If the controller is not installed, re-run [Step 2](#2-install-the-nginx-ingress-controller).
-
 ---
 
-### Tear down the entire deployment
+# 🧹 Cleanup
+
+Delete all Kubernetes resources:
+
+```bash
+kubectl delete -R -f k8s/
+```
+
+Or delete individually:
 
 ```bash
 kubectl delete -f k8s/ingress.yaml
@@ -611,26 +634,31 @@ kubectl delete -f k8s/mysql/
 kubectl delete -f k8s/config/
 ```
 
-Or delete everything at once (be careful — this removes PVs and PVCs too, which deletes your database data):
-
-```bash
-kubectl delete -f k8s/ -R
-```
-
 ---
 
-## Database
+# 🗄 Database
 
-- **Engine:** MySQL 8
-- **Database name:** `helpdesk_db`
-- **Table:** `help_requests` (auto-created by Hibernate on first run via `ddl-auto=update`)
-- **Schema:**
+**Engine:** MySQL 8
 
-| Column        | Type           | Notes                      |
-|---------------|----------------|----------------------------|
-| `id`          | BIGINT (PK)    | Auto-increment             |
-| `studentName` | VARCHAR        | Required                   |
-| `category`    | VARCHAR        | Academic / Technical / etc.|
-| `description` | VARCHAR(1000)  | Required                   |
-| `status`      | VARCHAR        | OPEN / IN_PROGRESS / DONE  |
-| `createdAt`   | DATETIME       | Set on creation            |
+**Database:** helpdesk_db
+
+**Table:** help_requests
+
+Hibernate automatically creates and updates the schema using:
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+
+### Schema
+
+| Column      | Type          | Notes                                    |
+| ----------- | ------------- | ---------------------------------------- |
+| id          | BIGINT        | Primary Key                              |
+| studentName | VARCHAR       | Required                                 |
+| category    | VARCHAR       | Academic / Technical / Library / Finance |
+| description | VARCHAR       | Required                                 |
+| status      | VARCHAR       | OPEN / IN_PROGRESS / DONE                |
+| createdAt   | DATETIME      | Auto-generated                           |
+
+---
